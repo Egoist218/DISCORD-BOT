@@ -1,0 +1,16 @@
+{
+    "registered_channels": [
+        1383006806162538588
+    ],
+    "allowed_role": null,
+    "bot_status": true,
+    "welcome_settings": {
+        "channel_id": 1381687044216193164,
+        "message": "\u0645\u0646\u0648\u0648\u0648\u0648\u0648\u0648\u0648\u0648\u0648\u0631  (mention user) \ud83d\ude04\n\u0639\u062f\u062f\u0646\u0627 \u0645\u0639\u0643 (count) \ud83d\ude0f\n\u0644\u0627 \u062a\u0646\u0633\u0649 \u062a\u0642\u0631\u0627 \u0627\u0644\u0642\u0648\u0627\u0646\u064a\u0646 \u0639\u0634\u0627\u0646 \u0645\u0627 \u0646\u0632\u0639\u0644 \u0645\u0646 \u0628\u0639\u0636 \ud83d\ude01",
+        "dm_message": "\u0644\u0627 \u062a\u0646\u0633\u0649 \u062a\u0642\u0631\u0623 \u0627\u0644\u0642\u0648\u0627\u0646\u064a\u0646 \u064a\u0628\u0637\u0644 \ud83d\ude24",
+        "image_url": "https://cdn.discordapp.com/attachments/1381616745906704444/1381616775623610399/PeakBoundIcon.webp?ex=68652b64&is=6863d9e4&hm=be24f5ec414e27c053eb463b358d31131d525253f1a96ae3501608f802ea4bb4&",
+        "line_image_url": "https://cdn.discordapp.com/attachments/1380939974710399036/1381612106083995708/standard.gif?ex=6848260b&is=6846d48b&hm=009b2821afcef19738d5c9ed126748721de663356aa1f5d06f96a4c0bb3b69b2&",
+        "embed_color": "0x9b59b6",
+        "enabled": true
+    }
+}
