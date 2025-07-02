@@ -1,9 +1,9 @@
 import discord
-from discord.ext import commands, tasks # تم إضافة tasks
+from discord.ext import commands, tasks
 import json
 import os
 from keep_alive import keep_alive
-import asyncio # تم إضافة asyncio
+import asyncio
 
 # تحديد مسار ملف الإعدادات
 CONFIG_FILE = 'config.json'
@@ -45,7 +45,6 @@ bot = commands.Bot(command_prefix='$', intents=intents)
 # دالة للتحقق من صلاحيات الرتبة
 async def has_allowed_role(ctx):
     if config["allowed_role"] is None:
-        # إذا لم يتم تحديد رتبة، يمكن لأي شخص لديه صلاحيات إدارية استخدام البوت
         if ctx.author.guild_permissions.administrator:
             return True
         else:
@@ -80,7 +79,6 @@ async def react_command(ctx, message_link: str):
     try:
         guild_id, channel_id, message_id = map(int, message_link.split('/')[-3:])
         
-        # التحقق من أن الروم مسجلة
         if channel_id not in config['registered_channels']:
             await ctx.send('⛔ هذه الروم ليست مسجلة في البوت.')
             return
@@ -152,7 +150,6 @@ async def disable_command(ctx):
 async def bot_list_command(ctx):
     embed = discord.Embed(title='📋 قائمة الرومات والرولات المسجلة في البوت:', color=discord.Color.blue())
     
-    # الرومات
     channels_list = []
     for channel_id in config['registered_channels']:
         channel = bot.get_channel(channel_id)
@@ -162,7 +159,6 @@ async def bot_list_command(ctx):
             channels_list.append(f'🟦 - قناة غير موجودة (ID: {channel_id})')
     embed.add_field(name='الرومات:', value='\n'.join(channels_list) if channels_list else 'لا توجد رومات مسجلة.', inline=False)
 
-    # الرتبة
     role_mention = 'لا توجد رتبة مسجلة.'
     if config['allowed_role']:
         role = ctx.guild.get_role(config['allowed_role'])
@@ -236,7 +232,6 @@ async def welcome_dm_message(ctx, *, message: str):
 @bot.command(name='pic')
 @commands.has_permissions(administrator=True)
 async def welcome_pic(ctx, link: str):
-    # Basic URL validation (can be improved)
     if not (link.startswith('http://') or link.startswith('https://')):
         await ctx.send('الرابط غير صالح أو لا يحتوي على صورة.')
         return
@@ -248,7 +243,6 @@ async def welcome_pic(ctx, link: str):
 @bot.command(name='line')
 @commands.has_permissions(administrator=True)
 async def welcome_line(ctx, link: str):
-    # Basic URL validation (can be improved)
     if not (link.startswith('http://') or link.startswith('https://')):
         await ctx.send('الرابط غير صالح أو لا يحتوي على صورة.')
         return
@@ -261,15 +255,8 @@ async def welcome_line(ctx, link: str):
 @commands.has_permissions(administrator=True)
 async def welcome_embed_color(ctx, color_name: str):
     colors = {
-        'ازرق': 0x3498db,  # Blue
-        'احمر': 0xe74c3c,  # Red
-        'اخضر': 0x2ecc71,  # Green
-        'اسود': 0x000000,  # Black
-        'ابيض': 0xffffff,  # White
-        'رمادي': 0x95a5a6,  # Gray
-        'بني': 0x795548,   # Brown
-        'بنفسجي': 0x9b59b6, # Purple
-        'اصفر': 0xf1c40f   # Yellow
+        'ازرق': 0x3498db, 'احمر': 0xe74c3c, 'اخضر': 0x2ecc71, 'اسود': 0x000000,
+        'ابيض': 0xffffff, 'رمادي': 0x95a5a6, 'بني': 0x795548, 'بنفسجي': 0x9b59b6, 'اصفر': 0xf1c40f
     }
     
     color_hex = colors.get(color_name.lower())
@@ -277,9 +264,9 @@ async def welcome_embed_color(ctx, color_name: str):
         await ctx.send('🚫 اللون غير معروف! استخدم الألوان المحددة فقط.')
         return
     
-    config['welcome_settings']['embed_color'] = f'{color_hex:#08x}' # Store as hex string
+    config['welcome_settings']['embed_color'] = f'{color_hex:#08x}'
     save_config(config)
-    await ctx.send(f'🎨 تم تغيير اللون إلى "{color_name}" {discord.Color(color_hex).to_rgb()}') # Display color emoji
+    await ctx.send(f'🎨 تم تغيير اللون إلى "{color_name}"')
 
 @bot.command(name='preview')
 @commands.has_permissions(administrator=True)
@@ -294,53 +281,32 @@ async def welcome_preview(ctx):
         await ctx.send('الروم المسجلة للترحيب غير موجودة أو لا يمكن الوصول إليها.')
         return
 
-    # Simulate a member join event
-    await on_member_join(ctx.author) # Use ctx.author as a test member
+    await on_member_join(ctx.author)
     await ctx.send('👀 تم عرض رسالة ترحيب تجريبية في روم الترحيب المسجلة.')
 
 @bot.command(name='reset')
 @commands.has_permissions(administrator=True)
 async def welcome_reset(ctx, setting_type: str = None):
     if setting_type is None:
-        # Reset all welcome settings
         config['welcome_settings'] = {
-            'channel_id': None,
-            'message': None,
-            'dm_message': None,
-            'image_url': None,
-            'line_image_url': None,
-            'embed_color': '#f39c12',
-            'enabled': False
+            'channel_id': None, 'message': None, 'dm_message': None, 'image_url': None,
+            'line_image_url': None, 'embed_color': '#f39c12', 'enabled': False
         }
-        save_config(config)
         await ctx.send('🧹 تم حذف جميع إعدادات الترحيب بنجاح.')
     else:
-        setting_type = setting_type.lower()
-        if setting_type == 'welcome-setup':
-            config['welcome_settings']['channel_id'] = None
-            await ctx.send('🧹 تم حذف إعداد روم الترحيب بنجاح.')
-        elif setting_type == 'msg':
-            config['welcome_settings']['message'] = None
-            await ctx.send('🧹 تم حذف رسالة الترحيب بنجاح.')
-        elif setting_type == 'dm-msg':
-            config['welcome_settings']['dm_message'] = None
-            await ctx.send('🧹 تم حذف رسالة الخاص بنجاح.')
-        elif setting_type == 'pic':
-            config['welcome_settings']['image_url'] = None
-            await ctx.send('🧹 تم حذف صورة الترحيب بنجاح.')
-        elif setting_type == 'line':
-            config['welcome_settings']['line_image_url'] = None
-            await ctx.send('🧹 تم حذف الخط الزخرفي بنجاح.')
-        elif setting_type == 'color':
-            config['welcome_settings']['embed_color'] = '#f39c12' # Reset to default color
-            await ctx.send('🧹 تم إعادة تعيين لون Embed الترحيب إلى الافتراضي.')
-        elif setting_type == 'toggle':
-            config['welcome_settings']['enabled'] = False
-            await ctx.send('🧹 تم تعطيل الترحيب بنجاح.')
+        setting_map = {
+            'welcome-setup': 'channel_id', 'msg': 'message', 'dm-msg': 'dm_message',
+            'pic': 'image_url', 'line': 'line_image_url', 'color': 'embed_color', 'toggle': 'enabled'
+        }
+        key_to_reset = setting_map.get(setting_type.lower())
+        if key_to_reset:
+            default_values = {'embed_color': '#f39c12', 'enabled': False}
+            config['welcome_settings'][key_to_reset] = default_values.get(key_to_reset)
+            await ctx.send(f'🧹 تم حذف إعداد {setting_type} بنجاح.')
         else:
-            await ctx.send('🚫 نوع الإعداد غير معروف. الأنواع المدعومة: welcome-setup, msg, dm-msg, pic, line, color, toggle.')
+            await ctx.send('🚫 نوع الإعداد غير معروف.')
             return
-        save_config(config)
+    save_config(config)
 
 @bot.command(name='settings')
 @commands.has_permissions(administrator=True)
@@ -350,10 +316,10 @@ async def welcome_settings(ctx):
     
     channel_mention = f'<#{settings["channel_id"]}>' if settings['channel_id'] else 'غير محدد'
     embed.add_field(name='الروم:', value=channel_mention, inline=False)
-    embed.add_field(name='الرسالة:', value=settings['message'] if settings['message'] else 'غير محددة', inline=False)
-    embed.add_field(name='رسالة الخاص:', value=settings['dm_message'] if settings['dm_message'] else 'غير محددة', inline=False)
-    embed.add_field(name='الصورة:', value=settings['image_url'] if settings['image_url'] else 'غير محددة', inline=False)
-    embed.add_field(name='الخط الزخرفي:', value=settings['line_image_url'] if settings['line_image_url'] else 'غير محدد', inline=False)
+    embed.add_field(name='الرسالة:', value=settings['message'] or 'غير محددة', inline=False)
+    embed.add_field(name='رسالة الخاص:', value=settings['dm_message'] or 'غير محددة', inline=False)
+    embed.add_field(name='الصورة:', value=settings['image_url'] or 'غير محددة', inline=False)
+    embed.add_field(name='الخط الزخرفي:', value=settings['line_image_url'] or 'غير محدد', inline=False)
     embed.add_field(name='لون Embed:', value=settings['embed_color'], inline=False)
     embed.add_field(name='الحالة:', value='مفعل' if settings['enabled'] else 'معطل', inline=False)
     
@@ -365,68 +331,61 @@ async def welcome_toggle(ctx, status: str):
     status = status.lower()
     if status == 'on':
         config['welcome_settings']['enabled'] = True
-        save_config(config)
         await ctx.send('✅ تم تفعيل الترحيب بنجاح.')
     elif status == 'off':
         config['welcome_settings']['enabled'] = False
-        save_config(config)
         await ctx.send('❌ تم تعطيل الترحيب مؤقتًا.')
     else:
         await ctx.send('الرجاء تحديد "on" أو "off".')
+        return
+    save_config(config)
 
-# Event for new members joining
 @bot.event
 async def on_member_join(member):
     if not config['welcome_settings']['enabled']:
         return
 
     welcome_channel_id = config['welcome_settings']['channel_id']
-    if welcome_channel_id is None:
-        return
+    if welcome_channel_id is None: return
     
     welcome_channel = bot.get_channel(welcome_channel_id)
-    if welcome_channel is None:
-        return
+    if welcome_channel is None: return
 
-    # Send DM message if set
     dm_message = config['welcome_settings']['dm_message']
     if dm_message:
         try:
             await member.send(dm_message)
-        except discord.Forbidden: # User has DMs disabled
+        except discord.Forbidden:
             pass
 
-    # Prepare welcome message for embed
     welcome_message_content = config['welcome_settings']['message']
     if welcome_message_content:
-        # Replace placeholders
-        welcome_message_content = welcome_message_content.replace('(mention user)', member.mention)
-        welcome_message_content = welcome_message_content.replace('(user)', member.name)
-        welcome_message_content = welcome_message_content.replace('(server)', member.guild.name)
-        welcome_message_content = welcome_message_content.replace('(count)', str(member.guild.member_count))
+        replacements = {
+            '(mention user)': member.mention, '(user)': member.name,
+            '(server)': member.guild.name, '(count)': str(member.guild.member_count)
+        }
+        for placeholder, value in replacements.items():
+            welcome_message_content = welcome_message_content.replace(placeholder, value)
 
-        embed_color = int(config['welcome_settings']['embed_color'], 16) if isinstance(config['welcome_settings']['embed_color'], str) else config['welcome_settings']['embed_color']
+        embed_color_str = config['welcome_settings']['embed_color']
+        embed_color = int(embed_color_str.lstrip('#'), 16)
         embed = discord.Embed(description=welcome_message_content, color=embed_color)
         
-        image_url = config['welcome_settings']['image_url']
-        if image_url:
-            embed.set_image(url=image_url)
+        if config['welcome_settings']['image_url']:
+            embed.set_image(url=config['welcome_settings']['image_url'])
         
         embed.set_thumbnail(url=member.avatar.url if member.avatar else member.default_avatar.url)
         embed.set_footer(text=f'Welcome {member.name}!', icon_url=member.guild.icon.url if member.guild.icon else None)
         
         await welcome_channel.send(embed=embed)
 
-    # Send line image if set
-    line_image_url = config['welcome_settings']['line_image_url']
-    if line_image_url:
-        await welcome_channel.send(line_image_url)
+    if config['welcome_settings']['line_image_url']:
+        await welcome_channel.send(config['welcome_settings']['line_image_url'])
 
-# الكلاس الجديد للميزة التلقائية
+# الكلاس الخاص بالرسائل التلقائية
 class AutoMessage(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        # معرف الروم المستهدف الذي طلبته
         self.target_channel_id = 1383770877136605194 
         self.auto_message_task.start()
 
@@ -437,25 +396,16 @@ class AutoMessage(commands.Cog):
         if channel:
             try:
                 await channel.send("يا ساتر يارب 🔥")
-                print(f"Sent auto message to channel {channel.name} ({self.target_channel_id})")
-            except discord.Forbidden:
-                print(f"Error: Bot does not have permission to send messages in channel {channel.name} ({self.target_channel_id})")
             except Exception as e:
                 print(f"An error occurred while sending auto message: {e}")
-        else:
-            print(f"Error: Target channel with ID {self.target_channel_id} not found.")
-
-    @auto_message_task.before_loop
-    async def before_auto_message_task(self):
-        print("Waiting for bot to be ready before starting auto message task...")
 
 # تشغيل البوت
 async def main():
     async with bot:
-        await bot.add_cog(AutoMessage(bot)) # تحميل الكوج الجديد
+        await bot.add_cog(AutoMessage(bot))
+        await bot.load_extension('self_ping') # <-- هذا هو السطر الجديد لتحميل ملف self_ping.py
         keep_alive()
         await bot.start(os.getenv("BOT_TOKEN"))
 
 if __name__ == "__main__":
     asyncio.run(main())
-    
